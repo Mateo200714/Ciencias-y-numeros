@@ -67,6 +67,21 @@ function calcular_nomenclatura() {
     //convertir atomos en letra minuscula a mayusculo (al = Al)
     let atomosremplazar_tablaperiodica = ["He", "Li", "Ne", "Na", "Mg", "Al", "Si", "Cl", "Ar", "Ca", "Sc", "Ti", "Cr", "Mn", "Fe", "Co", "Ni", "Cu", "Zn", "Ga", "Ge", "As", "Se", "Br", "Kr", "Rb", "Sr", "Zr", "Nb", "Mo", "Tc", "Ru", "Rh", "Pd", "Ag", "Cd", "In", "Sn", "Sb", "Te", "Xe", "Cs", "Ba", "La", "Ce", "Pr", "Nd", "Pm", "Sm", "Eu", "Gd", "Tb", "Dy", "Ho", "Er", "Tm", "Yb", "Lu", "Hf", "Ta", "Re", "Os", "Ir", "Pt", "Au", "Hg", "Tl", "Pb", "Bi", "Po", "At", "Rn", "Fr", "Ra", "Ac", "Th", "Pa", "Np", "Pu", "Am", "Cm", "Bk", "Cf", "Es", "Fm", "Md", "No", "Lr", "Rf", "Db", "Sg", "Bh", "Hs", "Mt", "Ds", "Rg", "Cn", "Nh", "Fl", "Mc", "Lv", "Ts", "Og", "Uue", "Ubn", "Ubu", "Ubb", "Ubt", "Ubq", "Ubp", "Ubh", "Ubs", "H", "B", "C", "N", "O", "F", "P", "S", "K", "V", "Y", "I", "W", "U"];
     formula_usuario = formula_usuario.toLowerCase();
+    //cominacion especial --> _ _ _(ac)
+    let combinacion_especial = "";//subindice tras la formula
+    if (formula_usuario[formula_usuario.length - 1] == ")") {
+        let terminado = false;
+        let veces = 2;
+        while (!terminado) {
+            combinacion_especial = formula_usuario[formula_usuario.length - veces] + combinacion_especial;
+            if (formula_usuario[formula_usuario.length - veces] != "(") {
+                veces++;
+            }
+            else {
+                terminado = true;
+            }
+        }
+    }
     for (let i = 0; i < atomosremplazar_tablaperiodica.length; i++) {
         formula_usuario = formula_usuario.replaceAll(atomosremplazar_tablaperiodica[i].toLowerCase(), atomosremplazar_tablaperiodica[i].toUpperCase());
     }
@@ -106,22 +121,6 @@ function calcular_nomenclatura() {
     if (!(Number(exponente_formula) >= 0)) {
         exponente_formula = 0;
     }
-    //cominacion especial --> _ _ _(ac)
-    let combinacion_especial = "";//subindice tras la formula
-    if (formula_usuario[formula_usuario.length - 1] == ")") {
-        let terminado = false;
-        let veces = 2;
-        while (terminado == false) {
-            if (formula_usuario[formula_usuario.length - veces] != "(") {
-                combinacion_especial = combinacion_especial + formula_usuario[formula_usuario.length - veces];
-                veces++;
-            }
-            else {
-                terminado = true;
-            }
-        }
-    }
-    else { }
     if (combinacion_especial == "") {
         combinacion_especial = null;
     }
@@ -1929,27 +1928,59 @@ function calcular_nomenclatura() {
         }
         else {//encontrar subindice
             let subindice_encontrado = false;
+            combinacion_especial = combinacion_especial.toLowerCase().replace('(', '').replace(')', '')
             switch (combinacion_especial) {
                 case "aq"://combinacion acuosa(hidrácidos); -Ácido elemento+hídrico-
-                    subindice_encontrado = "aq";
+                    subindice_encontrado = "ac";
                     break;
                 case "ac"://combinacion acuosa(hidrácidos); -Ácido elemento+hídrico-
                     subindice_encontrado = "ac";
                     break;
             }
             if (subindice_encontrado != false) {//crear nomenclatura
-                if (subindice_encontrado == "aq") {//hidrácidos
+                if (subindice_encontrado == "ac") {//hidrácidos
                     //confirmar si la formula es un hidruro para que sea hidracido
                     subindice_encontrado = null;
+                    //identificar elemento
+                    let masa_tablaperiodica = [1.00784, 4.0026, 6.941, 9.0121, 10.811, 12.0107, 14.0067, 15.9994, 18.9984, 20.1797, 22.9897, 24.3050, 26.9815, 28.0855, 30.9737, 32.065, 35.453, 39.948, 39.0983, 40.078, 44.9559, 47.867, 50.9415, 51.9961, 54.9380, 55.845, 58.9331, 58.6934, 63.546, 65.38, 69.723, 72.64, 74.9216, 78.96, 79.904, 83.798, 85.467, 87.62, 88.9059, 91.224, 92.9064, 95.94, 98.906, 101.07, 102.9055, 106.42, 107.8682, 112.411, 114.818, 118.710, 121.760, 127.60, 126.9045, 131.293, 132.9055, 137.327, 138.9055, 140.116, 140.9077, 144.24, 145, 150.36, 151.964, 157.25, 158.9253, 162.5, 164.9303, 167.259, 168.9342, 173.04, 174.967, 178.49, 180.9479, 183.84, 186.207, 190.23, 192.217, 195.078, 196.9665, 200.59, 204.3833, 207.2, 208.9804, 209, 210, 222, 223, 226, 227, 231.0359, 232.0381, 237, 238.0289, 243, 244, 247, 247, 251, 252, 257, 258, 259, 262, 267, 261.1087, 263.1182, 262.1229, 269, 278, 281.1620, 281.1684, 285.1744, 286.1810, 287.1904, 288.1943, 291.2045, 294.2104, 294.2139, 316, 320, 320, 321, 325, 330, 332, 334, 335];
+                    let tablaperiodica = ["H", "He", "Li", "Be", "B", "C", "N", "O", "F", "Ne", "Na", "Mg", "Al", "Si", "P", "S", "Cl", "Ar", "K", "Ca", "Sc", "Ti", "V", "Cr", "Mn", "Fe", "Co", "Ni", "Cu", "Zn", "Ga", "Ge", "As", "Se", "Br", "Kr", "Rb", "Sr", "Y", "Zr", "Nb", "Mo", "Tc", "Ru", "Rh", "Pd", "Ag", "Cd", "In", "Sn", "Sb", "Te", "I", "Xe", "Cs", "Ba", "La", "Ce", "Pr", "Nd", "Pm", "Sm", "Eu", "Gd", "Tb", "Dy", "Ho", "Er", "Tm", "Yb", "Lu", "Hf", "Ta", "W", "Re", "Os", "Ir", "Pt", "Au", "Hg", "Tl", "Pb", "Bi", "Po", "At", "Rn", "Fr", "Ra", "Ac", "Th", "Pa", "U", "Np", "Pu", "Am", "Cm", "Bk", "Cf", "Es", "Fm", "Md", "No", "Lr", "Rf", "Db", "Sg", "Bh", "Hs", "Mt", "Ds", "Rg", "Cn", "Nh", "Fl", "Mc", "Lv", "Ts", "Og", "Uue", "Ubn", "Ubu", "Ubb", "Ubt", "Ubq", "Ubp", "Ubh", "Ubs"];
+                    //buscar elemento compañero
+                    let numero_elemento = 0;
+                    for (let i = 0; i < tablaperiodica.length; i++) {
+                        numero_elemento++;
+                        if (tablaperiodica[i] == atomos_formula[1]) {//encontrado
+                            break;
+                        }
+                    }
+                    numero_elemento--;
+                    tablaperiodica = null;//borrar variable basura
+                    //nombrar 
+                    let nombres_tablaperiodica = ["Hidrógeno", "Helio", "Litio", "Berilio", "Boro", "Carbono", "Nitrógeno", "Oxigenuro", "Fluoruro", "Neón", "Sodio", "Magnesio", "Aluminio", "Silicio", "Fósforo", "Sulfhidrico", "Clorhidrico", "Argón", "Potasio", "Calcio", "Escandio", "Titanio", "Vanadio", "Cromo", "Manganeso", "Hierro", "Cobalto", "Níquel", "Cobre", "Zinc", "Galio", "Germanio", "Arsénico", "Selenhidrico", "Bromuro", "Kriptón", "Rubidio", "Estroncio", "Itrio", "Zirconio", "Niobio", "Molibdeno", "Tecnecio", "Rutenio", "Rodio", "Paladio", "Plata", "Cadmio", "Indio", "Estaño", "Antimonio", "Telururo", "Yoduro", "Xenón", "Cesio", "Bario", "Lantano", "Cerio", "Praseodimio", "Neodimio", "Prometio", "Samario", "Europio", "Gadolinio", "Terbio", "Disprosio", "Holmio", "Erbio", "Tulio", "Iterbio", "Lutecio", "Hafnio", "Tantalio", "Wolframio", "Renio", "Osmio", "Iridio", "Platino", "Oro", "Mercurio", "Talio", "Plomo", "Bismutio", "Poloniuro", "Astaturo", "Radón", "Francio", "Radio", "Actinio", "Torio", "Protactinio", "Uranio", "Neptanio", "Plutonio", "Americio", "Curio", "Berkelio", "Californio", "Einstenio", "Fermio", "Mendelevio", "Nobelio", "Laurencio", "Rutherfordio", "Dubnio", "Seaborgio", "Bohrio", "Hassio", "Meitnerio", "Darmstadio", "Roentgenio", "Copernicio", "Nihonio", "Flerovio", "Moscovio", "Livermorio", "Teneso", "Oganesón", "Unbiunium", "Unbinilium", "Unbiunium", "Unbibium", "Unbitrium", "Unbiquandium", "Unbipentium", "Unbihexium", "Unbiseptium"];
+                    let nomenclatura_tradicional = `Ácido ${nombres_tablaperiodica[numero_elemento]}`
+                    let masa_molar = masa_tablaperiodica[0] * Number(cantidad_atomos_formula[0]) + masa_tablaperiodica[numero_elemento]
+                    //mostrar en pantalla
+                    document.getElementById("div-div-div-datos-formulacion").innerHTML = "<div id='div-div-datos-calculados-formulacion'><div class='div-datos-calculados-formulacion'><h3 class='titulo-datos-calculados-formulacion'>N.Tradicional:</h3><h3 class='text-datos-calculados-formulacion'id='text-datos-nomenclatura-stock' style='font-size:16px;'>_ _ _</h3></div><div class='div-datos-calculados-formulacion'><h3 class='titulo-datos-calculados-formulacion'>Tipo:</h3><h3 class='text-datos-calculados-formulacion'id='text-datos-tipo-combinacion' style='font-size:18px;'>_ _ _</h3></div><div class='div-datos-calculados-formulacion'><h3 class='titulo-datos-calculados-formulacion'>Masa:</h3><h3 class='text-datos-calculados-formulacion'id='text-datos-masa-combinacion' style='font-size:17px;'>_ _ _</h3></div></div>";
+                    //nomenclatura stock
+                    document.getElementById("text-datos-nomenclatura-stock").innerHTML = nomenclatura_tradicional;
+                    //tipo combinacion
+                    document.getElementById("text-datos-tipo-combinacion").innerHTML = "Hidrácido";
+                    //masa molar
+                    let masa_separar_decimales = (masa_molar.toString()).split(".");
+                    if (masa_separar_decimales.length == 2 && masa_separar_decimales[1].length > 6) {
+                        document.getElementById("text-datos-masa-combinacion").innerHTML = masa_molar.toFixed(6) + " <sub style='font-size:15px;'>(g/mol)</sub>";
+                    }
+                    else {
+                        document.getElementById("text-datos-masa-combinacion").innerHTML = masa_molar + " <sub style='font-size:15px;'>(g/mol)</sub>";
+                    }
                 }
             }
             else {//mandar mensaje de error()
-
+                console.log('Error al identificar el subindice')
             }
         }
     }
     else {//mandar mensaje de error()
         //mandar mensaje a la cola
-        console.log("s");
+        console.log("Error al identificar el compuesto");
     }
 }
